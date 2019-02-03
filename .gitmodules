@@ -1,0 +1,3 @@
+[submodule "example"]
+	path = example
+	url = https://github.com/Afulton11/flutter_contacts_ui_service_example.git
