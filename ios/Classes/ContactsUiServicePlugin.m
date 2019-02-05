@@ -5,4 +5,5 @@
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   [SwiftContactsUiServicePlugin registerWithRegistrar:registrar];
 }
+  
 @end
