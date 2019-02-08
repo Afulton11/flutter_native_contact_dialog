@@ -14,9 +14,7 @@ class ContactsUiService {
   }
 
   static Future<String> addContact(Contact contact) async {
-    return await _channel.invokeMethod('addContact', <String, dynamic> {
-      "contact": Contact._toMap(contact),
-    });
+    return await _channel.invokeMethod('addContact', Contact._toMap(contact));
   }
 }
 
