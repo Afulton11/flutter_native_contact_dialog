@@ -1,6 +1,3 @@
-
-
-
 import 'package:contacts_ui_service/contacts_ui_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
