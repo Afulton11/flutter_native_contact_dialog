@@ -6,16 +6,10 @@ import 'package:flutter/services.dart';
 class ContactsUiService {
   static const MethodChannel _channel = const MethodChannel('github.com.afulton11.plugins/contacts_view');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-
   static Future<String> addContact(Contact contact) async {
     return await _channel.invokeMethod('addContact', Contact._toMap(contact));
   }
 }
-
 
 class Contact {
   Contact(

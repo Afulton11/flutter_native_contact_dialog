@@ -30,12 +30,8 @@ class ContactsUiServicePlugin(private val context: Context): MethodCallHandler {
     }
   }
 
-  private val contentResolver = context.contentResolver;
-
   override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
-      "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
-      "getContacts" -> this.getContacts((call.argument<Any>("query") as String?)!!, call.argument<Any>("withThumbnails") as Boolean, result)
       "addContact" -> {
         val c = Contact.fromMap(call.arguments as HashMap<*, *>)
         if (this.addContact(c)) {
@@ -44,154 +40,8 @@ class ContactsUiServicePlugin(private val context: Context): MethodCallHandler {
           result.error(null, "Failed to add the contact", null)
         }
       }
-      "deleteContact" -> {
-        val ct = Contact.fromMap(call.arguments as HashMap<*, *>)
-        if (this.deleteContact(ct)) {
-          result.success(null)
-        } else {
-          result.error(null, "Failed to delete the contact, make sure it has a valid identifier", null)
-        }
-      }
       else -> result.notImplemented()
     }
-  }
-
-  private val PROJECTION = arrayOf(
-          ContactsContract.Data.CONTACT_ID,
-          ContactsContract.Profile.DISPLAY_NAME,
-          ContactsContract.Contacts.Data.MIMETYPE,
-          StructuredName.DISPLAY_NAME,
-          StructuredName.GIVEN_NAME,
-          StructuredName.MIDDLE_NAME,
-          StructuredName.FAMILY_NAME,
-          StructuredName.PREFIX,
-          StructuredName.SUFFIX,
-          Phone.NUMBER,
-          Phone.TYPE,
-          Phone.LABEL,
-          Email.DATA,
-          Email.ADDRESS,
-          Email.TYPE,
-          Email.LABEL,
-          Organization.COMPANY,
-          Organization.TITLE,
-          StructuredPostal.FORMATTED_ADDRESS,
-          StructuredPostal.TYPE,
-          StructuredPostal.LABEL,
-          StructuredPostal.STREET,
-          StructuredPostal.POBOX,
-          StructuredPostal.NEIGHBORHOOD,
-          StructuredPostal.CITY,
-          StructuredPostal.REGION,
-          StructuredPostal.POSTCODE,
-          StructuredPostal.COUNTRY)
-
-
-  @TargetApi(Build.VERSION_CODES.ECLAIR)
-  private fun getContacts(query: String, withThumbnails: Boolean, result: Result) {
-    GetContactsTask(result, withThumbnails).execute(*arrayOf(query))
-  }
-
-  @TargetApi(Build.VERSION_CODES.CUPCAKE)
-  private inner class GetContactsTask(
-          private val getContactResult: Result,
-          private val withThumbnails: Boolean)
-      : AsyncTask<String, Void, ArrayList<HashMap<String, Any>>>() {
-
-    @TargetApi(Build.VERSION_CODES.ECLAIR)
-    override fun doInBackground(vararg query: String): ArrayList<HashMap<String, Any>> {
-      val contacts = getContactsFrom(getCursor(query[0]))
-      if (withThumbnails) {
-        for (c in contacts) {
-          setAvatarDataForContactIfAvailable(c)
-        }
-      }
-      //Transform the list of contacts to a list of Map
-      val contactMaps = ArrayList<HashMap<String, Any>>()
-      for (c in contacts) {
-        contactMaps.add(c.toMap())
-      }
-
-      return contactMaps
-    }
-
-    override fun onPostExecute(result: ArrayList<HashMap<String, Any>>) {
-      getContactResult.success(result)
-    }
-  }
-
-  private fun getCursor(query: String?): Cursor? {
-    var selection = ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?"
-    var selectionArgs = arrayOf(Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE)
-    if (query != null) {
-      selectionArgs = arrayOf("%$query%")
-      selection = ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ?"
-    }
-    return contentResolver.query(ContactsContract.Data.CONTENT_URI, PROJECTION, selection, selectionArgs, null)
-  }
-
-  /**
-   * Builds the list of contacts from the cursor
-   * @param cursor
-   * @return the list of contacts
-   */
-  private fun getContactsFrom(cursor: Cursor?): ArrayList<Contact> {
-    val map = LinkedHashMap<String, Contact>()
-
-    while (cursor != null && cursor.moveToNext()) {
-      val columnIndex = cursor.getColumnIndex(ContactsContract.Data.CONTACT_ID)
-      val contactId = cursor.getString(columnIndex)
-
-      if (!map.containsKey(contactId)) {
-        map[contactId] = Contact(contactId)
-      }
-      val contact = map[contactId];
-
-      val mimeType = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.MIMETYPE))
-      contact!!.displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
-
-      //NAMES
-      if (mimeType == StructuredName.CONTENT_ITEM_TYPE) {
-        contact.givenName = cursor.getString(cursor.getColumnIndex(StructuredName.GIVEN_NAME))
-        contact.middleName = cursor.getString(cursor.getColumnIndex(StructuredName.MIDDLE_NAME))
-        contact.familyName = cursor.getString(cursor.getColumnIndex(StructuredName.FAMILY_NAME))
-        contact.prefix = cursor.getString(cursor.getColumnIndex(StructuredName.PREFIX))
-        contact.suffix = cursor.getString(cursor.getColumnIndex(StructuredName.SUFFIX))
-      } else if (mimeType == Phone.CONTENT_ITEM_TYPE) {
-        val phoneNumber = cursor.getString(cursor.getColumnIndex(Phone.NUMBER))
-        val type = cursor.getInt(cursor.getColumnIndex(Phone.TYPE))
-        if (!TextUtils.isEmpty(phoneNumber)) {
-          contact.phones.add(Item(Item.getPhoneLabel(type), phoneNumber))
-        }
-      } else if (mimeType == Email.CONTENT_ITEM_TYPE) {
-        val email = cursor.getString(cursor.getColumnIndex(Email.ADDRESS))
-        val type = cursor.getInt(cursor.getColumnIndex(Email.TYPE))
-        if (!TextUtils.isEmpty(email)) {
-          contact.emails.add(Item(Item.getEmailLabel(type, cursor), email))
-        }
-      } else if (mimeType == Organization.CONTENT_ITEM_TYPE) {
-        contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY))
-        contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE))
-      } else if (mimeType == StructuredPostal.CONTENT_ITEM_TYPE) {
-        contact.postalAddresses.add(PostalAddress(cursor))
-      }//ADDRESSES
-      //ORG
-      //MAILS
-      //PHONES
-    }
-    return ArrayList(map.values)
-  }
-
-  private fun setAvatarDataForContactIfAvailable(contact: Contact) {
-    val contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Integer.parseInt(contact.identifier).toLong())
-    val photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY)
-    val avatarCursor = contentResolver.query(photoUri,
-            arrayOf(ContactsContract.Contacts.Photo.PHOTO), null, null, null)
-    if (avatarCursor != null && avatarCursor.moveToFirst()) {
-      val avatar = avatarCursor.getBlob(0)
-      contact.avatar = avatar
-    }
-    avatarCursor?.close()
   }
 
   private fun addContact(contact: Contact): Boolean {
@@ -259,20 +109,6 @@ class ContactsUiServicePlugin(private val context: Context): MethodCallHandler {
     try {
       intent.putExtra(ContactsContract.Intents.Insert.NAME, contact.getDisplayName());
       context.startActivity(intent)
-      return true
-    } catch (e: Exception) {
-      return false
-    }
-
-  }
-
-  private fun deleteContact(contact: Contact): Boolean {
-    val ops = ArrayList<ContentProviderOperation>()
-    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-            .withSelection(ContactsContract.Data.CONTACT_ID + "=?", arrayOf(contact.identifier.toString()))
-            .build())
-    try {
-      contentResolver.applyBatch(ContactsContract.AUTHORITY, ops)
       return true
     } catch (e: Exception) {
       return false

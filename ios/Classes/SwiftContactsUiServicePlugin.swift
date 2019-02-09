@@ -30,8 +30,6 @@ public class SwiftContactsUiServicePlugin: NSObject, FlutterPlugin {
     case "addContact":
       let contact = dictionaryToContact(dictionary: call.arguments as! [String : Any]);
       self.delegate.beginAddContact(result: result, forNewContact: contact)
-    case "getPlatformVersion":
-      result("iOS " + UIDevice.current.systemVersion);
     default:
         result(FlutterMethodNotImplemented)
     }
