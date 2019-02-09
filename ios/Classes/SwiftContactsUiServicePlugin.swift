@@ -1,88 +1,42 @@
 import Flutter
 import UIKit
 import Contacts
-import ContactsUI
-
 
 @available(iOS 9, *)
 public class SwiftContactsUiServicePlugin: NSObject, FlutterPlugin {
   
+  private let delegate: IContactViewDelegate
+  
+  init(pluginRegistrar: FlutterPluginRegistrar, viewController: UIViewController, window: UIWindow) {
+    self.delegate = ContactsViewPluginDelegate(registrar: pluginRegistrar, rootViewController: viewController, window: window)
+  }
+  
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "github.com.afulton11.plugins/contacts_view", binaryMessenger: registrar.messenger())
-    let instance = SwiftContactsUiServicePlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
     
-    let viewFactory = FlutterNativeContactFactory(withMessenger: registrar.messenger());
-    registrar.register(viewFactory, withId: "github.com.afulton11.views/contacts_view");
+    let window = UIApplication.shared.delegate?.window!;
+    let viewController: UIViewController = (window?.rootViewController)!;
+    
+    let instance = SwiftContactsUiServicePlugin(
+      pluginRegistrar: registrar,
+      viewController: viewController,
+      window: window!)
+
+    registrar.addMethodCallDelegate(instance, channel: channel)
   }
   
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    if #available(iOS 10, *) {
-      switch (call.method) {
-      case "addContact":
-        let args = call.arguments as! [String : Any];
-        let contact = dictionaryToContact(dictionary: args["contact"] as! [String : Any]);
-        requestAccess(completionHandler: { isAccessGranted in
-          if (isAccessGranted) {
-            let addResult = self.addContact(contact: contact);
-            if (addResult == "") {
-              result(nil)
-            } else {
-              result(FlutterError(code: "", message: addResult, details: nil));
-            }
-          }
-        })
-      case "getPlatformVersion":
-        result("iOS " + UIDevice.current.systemVersion);
-      default:
-          result(FlutterMethodNotImplemented)
-      }
-    } else {
-      result(FlutterError(code: "iOS 10.0 Required", message: "Contacts UI Service is only available in iOS 10.0 or newer.", details: nil)
-      );
+    switch (call.method) {
+    case "addContact":
+      let contact = dictionaryToContact(dictionary: call.arguments as! [String : Any]);
+      self.delegate.beginAddContact(result: result, forNewContact: contact)
+    case "getPlatformVersion":
+      result("iOS " + UIDevice.current.systemVersion);
+    default:
+        result(FlutterMethodNotImplemented)
     }
   }
   
-  @available(iOS 10, *)
-  func addContact(contact: CNContact) -> String {
-    return "";
-  }
-  
-  @available(iOS 10, *)
-  func requestAccess(completionHandler: @escaping (_ accessGranted: Bool) -> Void) {
-    let store = CNContactStore();
-    
-    switch CNContactStore.authorizationStatus(for: .contacts) {
-    case .authorized:
-      completionHandler(true)
-    case .denied:
-      showSettingsAlert(completionHandler)
-    case .restricted, .notDetermined:
-      store.requestAccess(for: .contacts) { granted, error in
-        if granted {
-          completionHandler(true)
-        } else {
-          DispatchQueue.main.async {
-            self.showSettingsAlert(completionHandler)
-          }
-        }
-      }
-    }
-  }
-  
-  @available(iOS 10, *)
-  private func showSettingsAlert(_ completionHandler: @escaping (_ accessGranted: Bool) -> Void) {
-    let alert = UIAlertController(title: nil, message: "This app requires access to Contacts to proceed. Would you like to open settings and grant permission to contacts?", preferredStyle: .alert)
-    alert.addAction(UIAlertAction(title: "Open Settings", style: .default) { action in
-      completionHandler(false)
-      UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!)
-    })
-    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { action in
-      completionHandler(false)
-    })
-  }
-  
-  @available(iOS 9, *)
   func dictionaryToContact(dictionary : [String:Any]) -> CNMutableContact{
     let contact = CNMutableContact()
   
@@ -101,7 +55,11 @@ public class SwiftContactsUiServicePlugin: NSObject, FlutterPlugin {
     //Phone numbers
     if let phoneNumbers = dictionary["phones"] as? [[String:String]]{
       for phone in phoneNumbers where phone["value"] != nil {
-        contact.phoneNumbers.append(CNLabeledValue(label:getPhoneLabel(label:phone["label"]),value:CNPhoneNumber(stringValue:phone["value"]!)))
+        contact.phoneNumbers.append(
+          CNLabeledValue(
+            label: getPhoneLabel(
+              label: phone["label"]),
+              value: CNPhoneNumber(stringValue: phone["value"]!)))
       }
     }
   
@@ -130,7 +88,6 @@ public class SwiftContactsUiServicePlugin: NSObject, FlutterPlugin {
     return contact
   }
 
-  @available(iOS 9, *)
   func contactToDictionary(contact: CNContact) -> [String:Any]{
     
     var result = [String:Any]()
@@ -198,7 +155,6 @@ public class SwiftContactsUiServicePlugin: NSObject, FlutterPlugin {
     return result
   }
 
-  @available(iOS 9, *)
   func getPhoneLabel(label: String?) -> String{
     let labelValue = label ?? ""
     switch(labelValue){
