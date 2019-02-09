@@ -3,8 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
-export 'contacts_view.dart';
-
 class ContactsUiService {
   static const MethodChannel _channel = const MethodChannel('github.com.afulton11.plugins/contacts_view');
 
