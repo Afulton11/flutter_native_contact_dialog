@@ -1,4 +1,4 @@
-package com.example.contactsuiservice;
+package com.fulton.nativecontactdialog;
 
 import android.annotation.TargetApi;
 import android.database.Cursor;

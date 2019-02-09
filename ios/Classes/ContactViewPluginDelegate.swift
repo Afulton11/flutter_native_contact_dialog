@@ -15,7 +15,7 @@ protocol IContactViewDelegate {
 }
 
 @available(iOS 9, *)
-class ContactsViewPluginDelegate : NSObject, IContactViewDelegate, CNContactViewControllerDelegate {
+class ContactViewPluginDelegate : NSObject, IContactViewDelegate, CNContactViewControllerDelegate {
   
   private let registrar: FlutterPluginRegistrar
   private let window: UIWindow

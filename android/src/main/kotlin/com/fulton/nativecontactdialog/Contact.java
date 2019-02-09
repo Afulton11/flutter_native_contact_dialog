@@ -1,8 +1,7 @@
-package com.example.contactsuiservice;
+package com.fulton.nativecontactdialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 public class Contact {
 

@@ -3,24 +3,24 @@ import UIKit
 import Contacts
 
 @available(iOS 9, *)
-public class SwiftContactsUiServicePlugin: NSObject, FlutterPlugin {
+public class SwiftNativeContactDialogPlugin: NSObject, FlutterPlugin {
   
   private let delegate: IContactViewDelegate
   
   init(pluginRegistrar: FlutterPluginRegistrar, viewController: UIViewController, window: UIWindow) {
-    self.delegate = ContactsViewPluginDelegate(registrar: pluginRegistrar, rootViewController: viewController, window: window)
+    self.delegate = ContactViewPluginDelegate(registrar: pluginRegistrar, rootViewController: viewController, window: window)
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "github.com.afulton11.plugins/contacts_view", binaryMessenger: registrar.messenger())
+    let channel = FlutterMethodChannel(name: "github.com.afulton11.plugins/native_contact_dialog", binaryMessenger: registrar.messenger())
     
-    let window = UIApplication.shared.delegate?.window!;
-    let viewController: UIViewController = (window?.rootViewController)!;
+    let window = (UIApplication.shared.delegate?.window!)!;
+    let viewController: UIViewController = window.rootViewController!;
     
-    let instance = SwiftContactsUiServicePlugin(
+    let instance = SwiftNativeContactDialogPlugin(
       pluginRegistrar: registrar,
       viewController: viewController,
-      window: window!)
+      window: window)
 
     registrar.addMethodCallDelegate(instance, channel: channel)
   }

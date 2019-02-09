@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
-class ContactsUiService {
-  static const MethodChannel _channel = const MethodChannel('github.com.afulton11.plugins/contacts_view');
+class NativeContactDialog {
+  static const MethodChannel _channel = const MethodChannel('github.com.afulton11.plugins/native_contact_dialog');
 
   static Future<String> addContact(Contact contact) async {
     return await _channel.invokeMethod('addContact', Contact._toMap(contact));

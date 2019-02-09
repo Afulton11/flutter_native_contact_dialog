@@ -1,4 +1,4 @@
-package com.example.contactsuiservice
+package com.fulton.nativecontactdialog
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -9,24 +9,15 @@ import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.StructuredName
-import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
-import android.text.TextUtils
-import android.provider.ContactsContract.CommonDataKinds.Email
-import android.provider.ContactsContract.CommonDataKinds.Phone
-import android.os.Build
-import android.annotation.TargetApi
 import android.content.*
-import android.os.AsyncTask
-import android.database.Cursor
-import android.net.Uri
 
 
-class ContactsUiServicePlugin(private val context: Context): MethodCallHandler {
+class NativeContactDialogPlugin(private val context: Context): MethodCallHandler {
   companion object {
     @JvmStatic
     fun registerWith(registrar: Registrar) {
-      val channel = MethodChannel(registrar.messenger(), "github.com.afulton11.plugins/contacts_view")
-      channel.setMethodCallHandler(ContactsUiServicePlugin(registrar.context()))
+      val channel = MethodChannel(registrar.messenger(), "github.com.afulton11.plugins/native_contact_dialog")
+      channel.setMethodCallHandler(NativeContactDialogPlugin(registrar.context()))
     }
   }
 
