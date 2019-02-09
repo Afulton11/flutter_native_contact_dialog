@@ -1,4 +1,4 @@
-package com.example.contactsuiservice;
+package com.fulton.nativecontactdialog;
 
 import android.database.Cursor;
 import android.provider.ContactsContract.*;

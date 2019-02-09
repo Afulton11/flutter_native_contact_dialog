@@ -1,4 +1,4 @@
-group 'com.example.contactsuiservice'
+group 'com.fulton.nativecontactdialog'
 version '1.0-SNAPSHOT'
 
 buildscript {
