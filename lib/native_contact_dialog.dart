@@ -3,9 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
+/// Contains static functions for invoking native contact dialogs
 class NativeContactDialog {
   static const MethodChannel _channel = const MethodChannel('github.com.afulton11.plugins/native_contact_dialog');
 
+  /// Displays the [contact] in a native add contact dialog.
   static Future<String> addContact(Contact contact) async {
     return await _channel.invokeMethod('addContact', Contact._toMap(contact));
   }
