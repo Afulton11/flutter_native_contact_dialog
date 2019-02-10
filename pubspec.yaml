@@ -1,9 +1,9 @@
 name: native_contact_dialog
-description: A Flutter plugin to add new contacts using the platform's native contact dialogs.
+description: Edit contacts using the platform's native contact dialogs.
 version: 0.0.1
-auathor:
+author:
 - Andrew Fulton <afuton11@gmail.com>
-homepage:
+homepage: https://github.com/Afulton11/flutter_native_contact_dialog
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
