@@ -1,6 +1,6 @@
 name: native_contact_dialog
 description: Edit contacts using the platform's native contact dialogs.
-version: 0.1.0
+version: 0.1.1
 author: Andrew Fulton <afulton20@gmail.com>
 homepage: https://github.com/Afulton11/flutter_native_contact_dialog
 
