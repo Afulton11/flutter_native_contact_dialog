@@ -1,14 +1,12 @@
-# contacts_ui_service
+# native_contact_dialog
 
-A new flutter plugin project.
+A Flutter plugin for ios and android that brings up native contact screens when you want to add, edit, or remove a contact from the user's device. Using this plugin, you do not need to enable READ and WRITE access for the user's contacts.
 
-## Getting Started
+## Current Features
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.io/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+* Add new Contact
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+## TODO
+
+* Edit existing Contact dialog
+* Delete existing Contact dialog
