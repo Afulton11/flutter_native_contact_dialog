@@ -5,22 +5,19 @@ import Contacts
 @available(iOS 9, *)
 public class SwiftNativeContactDialogPlugin: NSObject, FlutterPlugin {
   
-  private let delegate: IContactViewDelegate
+  private let flutterVC: UIViewController;
+  private var addContactSession: ContactViewDelegate?;
   
-  init(pluginRegistrar: FlutterPluginRegistrar, viewController: UIViewController, window: UIWindow) {
-    self.delegate = ContactViewPluginDelegate(registrar: pluginRegistrar, rootViewController: viewController, window: window)
+  init(withViewController viewController: UIViewController) {
+    self.flutterVC = viewController;
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "github.com.afulton11.plugins/native_contact_dialog", binaryMessenger: registrar.messenger())
     
-    let window = (UIApplication.shared.delegate?.window!)!;
-    let viewController: UIViewController = window.rootViewController!;
+    let viewController: UIViewController = UIApplication.shared.delegate!.window!!.rootViewController!;
     
-    let instance = SwiftNativeContactDialogPlugin(
-      pluginRegistrar: registrar,
-      viewController: viewController,
-      window: window)
+    let instance = SwiftNativeContactDialogPlugin(withViewController: viewController)
 
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
@@ -29,10 +26,23 @@ public class SwiftNativeContactDialogPlugin: NSObject, FlutterPlugin {
     switch (call.method) {
     case "addContact":
       let contact = dictionaryToContact(dictionary: call.arguments as! [String : Any]);
-      self.delegate.beginAddContact(result: result, forNewContact: contact)
+      launchContactVC(withResult: result, forNewContact: contact);
+      break;
     default:
         result(FlutterMethodNotImplemented)
     }
+  }
+  
+  func launchContactVC(withResult result: FlutterResult, forNewContact contact: CNContact)
+  {
+    self.addContactSession = ContactViewDelegate(withResult: result, withNewContact: contact);
+    self.addContactSession!.didFinish = { [weak self] in
+      self?.addContactSession = nil;
+    }
+    
+    let controller = UINavigationController(rootViewController: self.addContactSession!.contactViewController);
+    
+    self.flutterVC.present(controller, animated: true, completion: nil)
   }
   
   func dictionaryToContact(dictionary : [String:Any]) -> CNMutableContact{
