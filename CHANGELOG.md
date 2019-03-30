@@ -1,3 +1,7 @@
+## 0.2.1
+
+* Switched to swift version 5.0
+
 ## 0.2.0
 
 * Fixed an issue (#3) that caused methods from the url_launcher flutter package to not work on iOS when used alongside this native_contact_dialog plugin.
