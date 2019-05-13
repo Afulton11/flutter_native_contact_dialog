@@ -1,5 +1,7 @@
 package com.fulton.nativecontactdialog
 
+import android.annotation.TargetApi
+import android.app.Activity
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -10,14 +12,15 @@ import android.provider.ContactsContract.CommonDataKinds
 import android.provider.ContactsContract.CommonDataKinds.Organization
 import android.provider.ContactsContract.CommonDataKinds.StructuredName
 import android.content.*
+import android.os.Build
 
 
-class NativeContactDialogPlugin(private val context: Context): MethodCallHandler {
+class NativeContactDialogPlugin(private val activity: Activity): MethodCallHandler {
   companion object {
     @JvmStatic
     fun registerWith(registrar: Registrar) {
       val channel = MethodChannel(registrar.messenger(), "github.com.afulton11.plugins/native_contact_dialog")
-      channel.setMethodCallHandler(NativeContactDialogPlugin(registrar.context()))
+      channel.setMethodCallHandler(NativeContactDialogPlugin(registrar.activity()))
     }
   }
 
@@ -35,6 +38,7 @@ class NativeContactDialogPlugin(private val context: Context): MethodCallHandler
     }
   }
 
+  @TargetApi(Build.VERSION_CODES.HONEYCOMB)
   private fun addContact(contact: Contact): Boolean {
 
     val intent = Intent(Intent.ACTION_INSERT_OR_EDIT).apply {
@@ -97,12 +101,12 @@ class NativeContactDialogPlugin(private val context: Context): MethodCallHandler
       putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
     }
 
-    try {
+    return try {
       intent.putExtra(ContactsContract.Intents.Insert.NAME, contact.getDisplayName());
-      context.startActivity(intent)
-      return true
+      activity.startActivity(intent)
+      true
     } catch (e: Exception) {
-      return false
+      false
     }
 
   }
