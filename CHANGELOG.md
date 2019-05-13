@@ -1,3 +1,7 @@
+## 0.2.2
+
+* Add compatibility for android sdk 28+
+
 ## 0.2.1
 
 * Switched to swift version 5.0
